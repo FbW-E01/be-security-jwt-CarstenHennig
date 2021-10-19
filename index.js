@@ -1,6 +1,18 @@
 import express from "express";
+import { check, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import bcrypt from "bcrypt";
+
+const users = [
+  { username: "Carsten", password: "swordfish" },
+  { username: "John", password: "pass123" },
+];
+console.log(users);
+
+// Setup Express application
+const app = express();
+app.use(express.json());
 
 // This makes a very secure random secret with every app reboot
 const secret = crypto.randomBytes(64).toString("hex");
@@ -36,22 +48,55 @@ function checkTokenMiddleware(req, res, next) {
   });
 }
 
-// Setup Express application
-const app = express();
+// Checking username if unique
+const options = [
+  check("username")
+    .isAlpha()
+    .notEmpty()
+    .withMessage(
+      "The user name should contain only letters and should be unique."
+    ),
+];
+
+// New user registration
+
+async function hash(password) {
+  return await bcrypt.hash(password, 3);
+}
+
+app.post("/register", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (users.find((x) => x.username === username)) {
+    res.status(400).send("username already in use");
+  }
+  users.push({ username, password: await hash(password) });
+
+  res.send("registration complete, welcome aboard");
+});
 
 // This endpoint returns a fresh token
-app.get("/token", (req, res) => {
+app.post("/login", (req, res) => {
   // TODO: Check login username / password somehow
-  const payload = { userId: 42, username: "Veera cat", admin: true };
+  const payload = req.body;
+  console.log(payload);
   const options = { expiresIn: "5m" };
   const token = jwt.sign(payload, secret, options);
   res.send(token);
 });
 
 // This endpoint is secured; only requests with a valid token can access ot
-app.get("/secure", checkTokenMiddleware, (req, res) => {
+app.get("/login", checkTokenMiddleware, (req, res) => {
   // check token and return something
-  res.send(`Hooray, ${req.userData.username}, you have access`);
+  res.json(users.filter((x) => x.username === req.userData.username));
+  // users.map((x) => {
+  // console.log("#1", x.username);
+  // console.log("#2", req.userData.username);
+  //   if (x.username === req.userData.username) {
+  //     return res.send(`Hooray, ${req.userData.username}, you have access`);
+  //   }
+  //   res.send("No user like that");
+  // });
 });
 
 const port = 8000;

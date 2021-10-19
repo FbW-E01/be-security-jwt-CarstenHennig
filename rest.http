@@ -1,6 +1,26 @@
 ### Get token
-GET http://localhost:8000/token
+
+POST http://localhost:8000/login
+Content-Type: application/json
+
+{
+    "username": "Joely",
+    "password": "swordfish"
+}
+
+
+### Create new user
+
+POST http://localhost:8000/register
+Content-Type: application/json
+
+{
+    "username": "Joel",
+    "password": "VeeraCaT"
+}
+
 
 ### Get secure message
-GET http://localhost:8000/secure
-Authorization: Bearer aaaa.bbbb.cccc
+
+GET http://localhost:8000/login
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZWx5IiwicGFzc3dvcmQiOiJzd29yZGZpc2giLCJpYXQiOjE2MzQ1NjQwNTQsImV4cCI6MTYzNDU2NDM1NH0.CPp-ZylXld4tsdBY1tBwqm3UPZB9DcaenO0S5koRkYg
